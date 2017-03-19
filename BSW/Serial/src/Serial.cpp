@@ -9,6 +9,8 @@ int count=0;
 Serial::Serial()
 {
     setupSerialPort();
+    inChar = '';
+    inString = "";
 }
 
 Serial::~Serial()
@@ -36,7 +38,7 @@ void Serial::sendCommand(int mode)
         break;
     case RUN_MODE3:
         serialPort->write("w3\n");
-        SerialTimer->start(100);
+        SerialTimer->start(10);
         break;
     case STOP_PLAYER:
         serialPort->write("d\n");
@@ -44,7 +46,6 @@ void Serial::sendCommand(int mode)
     default:
         break;
     }
-//    QThread::msleep(100);
 }
 
 void Serial::setupSerialPort()
@@ -89,35 +90,50 @@ void Serial::setupSerialPort()
         serialPort->setFlowControl(QSerialPort::NoFlowControl);
         serialPort->setParity(QSerialPort::NoParity);
         serialPort->setStopBits(QSerialPort::OneStop);
-        serialPort->setReadBufferSize(100);
+//        serialPort->setReadBufferSize(100);
         serialPort->open(QIODevice::ReadWrite);
-        SerialTimer = new QTimer();
-        connect(SerialTimer,SIGNAL(timeout()),this,SLOT(serialReceived()));
-        //        connect(serialPort,SIGNAL(readyRead()),this,SLOT(serialReceived()));
+         SerialTimer = new QTimer();
+         connect(SerialTimer,SIGNAL(timeout()),this,SLOT(serialReceived()));
+//        connect(serialPort,SIGNAL(readyRead()),this,SLOT(serialReceived()));
 
     }
     else{
         qDebug() <<" couldn't find serial port" << "\n";
     }
+
+    /*
+     *  Print properties of serial port
+     */
 }
 /******************************************************************************
 * Read all message
 *******************************************************************************/
 void Serial::serialReceived()
 {
-    /*Readall() doesn't gurantee read all message so it need buffer*/
-    serialSplitBuffer = serialRawBuffer.split("\r\n");
-    if(serialSplitBuffer.length()<3){
-        serialRawData = serialPort->readAll();
-        serialRawBuffer = serialRawBuffer + QString::fromStdString(serialRawData.toStdString());
-        serialRawData.clear();
+    while(0 != serialPort->bytesAvailable())
+    {
+        //get the new byte
+        serialPort->getChar(&inChar);
+
+        // if the incoming character is a newline, set a flag
+        if('\n\r' == inChar)
+        {
+            stringComplete = true;
+        }
+        else /*('\n\r' == inChar)*/
+        {
+            inString.append(inChar);
+        }
     }
-    else{
-        serialRawBuffer.clear();
-        serialParsedData = serialSplitBuffer[1];
-        serialValue = serialParsedData.toInt();
-        serialParsedData.clear();
+    if(stringcomplete)
+    {
+        qDebug << inString;
+        serialValue = inString.toInt();
+        inString.clear();
     }
-    qDebug() << serialValue;
 }
 
+int Serial::getSerialValue()
+{
+    return serialValue;
+}

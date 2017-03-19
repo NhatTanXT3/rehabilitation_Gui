@@ -1,0 +1,3 @@
+1. Serial data is not correct after about 1 minutes
+2. Game is has a lot of object after 2 minutes
+3. Remove all button except start game

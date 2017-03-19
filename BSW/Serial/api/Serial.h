@@ -30,28 +30,28 @@ class Serial : public QWidget
 public:
     Serial();
     ~Serial();
+
+    void sendCommand(int mode);
+    int getSerialValue(void);
+
+private:
+    /* Serial port Properties */
     /* Arduino micro: VID = 9025, PID = 32823*/
     static const quint16 JRD_vendor_id = 9025;
     static const quint16 JRD_product_id = 32823;
     bool JRD_is_available = false;
     QString JRD_port_name;
-
-    void update_chart(const QPoint &newPoint);
-    void save_file(const QPoint &newPoint);
-    void m_serial_test();
-    void sendCommand(int mode);
-    int serialValue;
     QTimer *SerialTimer;
-
-private:
     QSerialPort *serialPort;
     Ui::Serial *ui;
-    QByteArray serialRawData;
-    QString serialRawBuffer;
-    QStringList serialSplitBuffer;
-    QString serialParsedData;
-    void setupSerialPort();
 
+    /* Data Properties */
+    QChar inChar;
+    QString inString;
+    bool stringcomplete = false;
+    int serialValue = 0;
+    void setupSerialPort();
+    
 private slots:
     void serialReceived();
 };

@@ -47,7 +47,7 @@ void Player::spawn()
 
 void Player::test()
 {
-    int y_player = game->myserial->serialValue/10;
+    int y_player = game->myserial->getSerialValue()/10;
     if(y_player > 100)y_player = 100;
     y_player = 410-y_player*410/100;
     game->player->setPos(game->player->x(),y_player);
